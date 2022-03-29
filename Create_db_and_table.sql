@@ -1,15 +1,11 @@
 USE [master]
 GO
 
-/****** Object:  Database [Casus2021B3]    Script Date: 23-3-2021 08:40:42 ******/
 CREATE DATABASE [SensorData]
 GO
 
 USE [SensorData]
 GO
-
-/****** Object:  Table [dbo].[SensorReading]    Script Date: 23-3-2021 08:42:26 ******/
-
 
 CREATE TABLE [dbo].[SensorReading](
 	[EntryId] [bigint] IDENTITY(1,1) NOT NULL,
@@ -23,5 +19,4 @@ CREATE TABLE [dbo].[SensorReading](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-
 
