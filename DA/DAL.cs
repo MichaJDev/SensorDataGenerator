@@ -16,7 +16,7 @@ namespace SensorDataGenerator.DA
         private string source = ".";
         private string catalog = "SensorData";
 
-        const int MAXRANDOM = 10; // maximum number of people to add or delete per datageneration
+        const int MAXRANDOM = 8; // maximum number of people to add or delete per datageneration
         const int INTERVALMINUTES = 5; // interval in minutes to generate data for
 
         private string GetConnectionString()
@@ -35,9 +35,14 @@ namespace SensorDataGenerator.DA
         /// <param name="_startDateCalculation"></param>
         /// <param name="_datasource">servername of the database server</param>
         /// <param name="_catalog">database or catalogname of the server</param>
-        public DAL(DateTime _startDateCalculation, string _datasource, string _catalog)
+        /// <param name="_numberOfSensors">number of sensors to generate</param>
+        /// <param name="_locationMaxNumberOfPeople">Maximum number of people in the location</param>
+        public DAL(DateTime _startDateCalculation, string _datasource, string _catalog, int _numberOfSensors, int _locationMaxNumberOfPeople)
         {            
-            Location = new Location(_startDateCalculation, 15);
+            Location = new Location(_startDateCalculation, _numberOfSensors);
+            Location.MaxPersons = _locationMaxNumberOfPeople;
+            Location.CurrentPersons = 0;
+
             source = !string.IsNullOrEmpty(_datasource) ? _datasource : source;
             catalog = !string.IsNullOrEmpty(_catalog) ? _catalog : catalog;
         }
@@ -59,7 +64,7 @@ namespace SensorDataGenerator.DA
                     {
                         while (dataReader.Read())
                         {
-                            return $"Number of records {Int32.Parse(dataReader[0].ToString())}";
+                            return $"Connection successfull. Number of records in table {Int32.Parse(dataReader[0].ToString())}";
                         }
                     }
                 }
@@ -141,14 +146,21 @@ namespace SensorDataGenerator.DA
                     double factorIn;
                     switch (Location.CalculatingDateTime.Hour)
                     {
+                        //determine factor based on opening hours (example)
+                        case <= 8:
+                            factorIn = 0;
+                            break;
                         case <= 10:
                             factorIn = 0.1;
                             break;
                         case <= 16:
                             factorIn = 0.8;
                             break;
-                        default:
+                        case <= 18:
                             factorIn = 1;
+                            break;
+                        default:
+                            factorIn = 0;
                             break;
                     }
 

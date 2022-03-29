@@ -32,8 +32,8 @@ namespace SensorDataGenerator.Model
         /// <param name="_calculatingDateTime">The date we are calculating for</param>
         public Location(DateTime _calculatingDateTime, int _sensors)
         {
-            MaxPersons = 20000;
-            CurrentPersons = 5000;
+            MaxPersons = 100;
+            CurrentPersons = 0;
             CalculatingDateTime = _calculatingDateTime;
             Sensors = new List<Sensor>();
             for (int i = 0; i < _sensors; i++)
