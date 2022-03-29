@@ -10,5 +10,5 @@ Op alle plekken in de oplossing is commentaar in de code geplaatst wat zou moete
 # Stappenplan
 
 -Maak een database aan genaamd "Sensordata"
--Voer het script [Create db and table.sql](Create db and table.sql) uit
+-Voer het script [Create_db_and_table.sql](Create_db_and_table.sql) uit
 -Build en run de code
