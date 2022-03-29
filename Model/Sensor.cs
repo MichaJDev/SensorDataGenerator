@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace LoRaDataGenerator.Model
+namespace SensorDataGenerator.Model
 {
     /// <summary>
     /// Represents a sensor that is monitoring traffic
@@ -14,13 +14,13 @@ namespace LoRaDataGenerator.Model
         /// </summary>
         public int SendorId { get; set; }
         /// <summary>
-        /// Number of cars in for the timeslot
+        /// Number of people in for the timeslot
         /// </summary>
-        public int CarsIn { get; set; }
+        public int PeopleIn { get; set; }
         /// <summary>
-        /// Number of cars out for the timeslot
+        /// Number of people out for the timeslot
         /// </summary>
-        public int CarsOut { get; set; }
+        public int PeopleOut { get; set; }
 
         /// <summary>
         /// The timestamp of the moment that the data is sent and the counters are reset.
@@ -30,8 +30,8 @@ namespace LoRaDataGenerator.Model
 
         public Sensor(int _id, string _resetTimeStamp)
         {
-            CarsIn = 0;
-            CarsOut = 0;
+            PeopleIn = 0;
+            PeopleOut = 0;
             SendorId = _id;
             ResetTimeStamp = _resetTimeStamp;
         }
@@ -43,25 +43,25 @@ namespace LoRaDataGenerator.Model
         public void Reset(DateTime _resetPer)
         {
             ResetTimeStamp = Helper.DateToStamp(_resetPer);
-            CarsIn = 0;
-            CarsOut = 0;
+            PeopleIn = 0;
+            PeopleOut = 0;
         }
 
         /// <summary>
         /// Generete fake data for the sensor
         /// </summary>
-        /// <param name="_factorIn">Factor for incoming cars</param>
-        /// <param name="_factorOut">Factor for outgoing cars</param>
-        /// <param name="_default">Max random per genration</param>
-        /// <param name="_maxIn">Maximum incoming cars</param>
-        /// <param name="_maxOut">Maximum outgoing cars</param>
+        /// <param name="_factorIn">Factor for incoming people</param>
+        /// <param name="_factorOut">Factor for outgoing people</param>
+        /// <param name="_default">Max random per generation</param>
+        /// <param name="_maxIn">Maximum incoming people</param>
+        /// <param name="_maxOut">Maximum outgoing people</param>
         public void GenerateFakeData(double _factorIn, double _factorOut, int _default, int _maxIn, int _maxOut)
         {
             Random rnd = new Random();
             var c_in = Math.Round(rnd.Next(0, _default) * _factorIn, 0);
             var c_out = Math.Round(rnd.Next(0, _default) * _factorOut, 0);
-            CarsIn = (int)Math.Min(c_in, _maxIn);
-            CarsOut = (int)Math.Min(c_out, _maxOut);
+            PeopleIn = (int)Math.Min(c_in, _maxIn);
+            PeopleOut = (int)Math.Min(c_out, _maxOut);
         }
 
     }

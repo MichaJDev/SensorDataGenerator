@@ -1,4 +1,4 @@
-﻿using LoRaDataGenerator.Model;
+﻿using SensorDataGenerator.Model;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LoRaDataGenerator.DA
+namespace SensorDataGenerator.DA
 {
     /// <summary>
     /// Data access layer
@@ -14,7 +14,10 @@ namespace LoRaDataGenerator.DA
     class DAL
     {
         private string source = ".";
-        private string catalog = "Casus2021B3";
+        private string catalog = "SensorData";
+
+        const int MAXRANDOM = 10; // maximum number of people to add or delete per datageneration
+        const int INTERVALMINUTES = 5; // interval in minutes to generate data for
 
         private string GetConnectionString()
         {
@@ -22,9 +25,9 @@ namespace LoRaDataGenerator.DA
         }
 
         /// <summary>
-        /// The city
+        /// The location/project the sensors belong to
         /// </summary>
-        public City ValkenBurg { get; set; }
+        public Location Location { get; set; }
 
         /// <summary>
         /// The constructor for the DAL
@@ -34,7 +37,7 @@ namespace LoRaDataGenerator.DA
         /// <param name="_catalog">database or catalogname of the server</param>
         public DAL(DateTime _startDateCalculation, string _datasource, string _catalog)
         {            
-            ValkenBurg = new City(_startDateCalculation, 15);
+            Location = new Location(_startDateCalculation, 15);
             source = !string.IsNullOrEmpty(_datasource) ? _datasource : source;
             catalog = !string.IsNullOrEmpty(_catalog) ? _catalog : catalog;
         }
@@ -51,7 +54,7 @@ namespace LoRaDataGenerator.DA
                 {                    
                     cnn.Open();
                     cmd.Connection = cnn;
-                    cmd.CommandText = "SELECT count(*) FROM LoRaSensorReading";
+                    cmd.CommandText = "SELECT count(*) FROM SensorReading";
                     using (SqlDataReader dataReader = cmd.ExecuteReader())
                     {
                         while (dataReader.Read())
@@ -64,6 +67,10 @@ namespace LoRaDataGenerator.DA
             return "";
         }
 
+        /// <summary>
+        /// Empty the sensor reading table
+        /// </summary>
+        /// <returns>Number of deleted rows</returns>
         internal int TruncateDataTable()
         {
             try
@@ -74,7 +81,7 @@ namespace LoRaDataGenerator.DA
                     {
                         cnn.Open();
                         cmd.Connection = cnn;
-                        cmd.CommandText = "delete from LoRaSensorReading";
+                        cmd.CommandText = "delete from SensorReading";
                         return cmd.ExecuteNonQuery();
                     }
                 }
@@ -88,11 +95,11 @@ namespace LoRaDataGenerator.DA
         /// <summary>
         /// Store the data for one sensor
         /// </summary>
-        /// <param name="_sensor"></param>
+        /// <param name="_sensor">The sensor to store for</param>
         private void StoreData(Sensor _sensor)
         {
             // show feedback
-            Console.WriteLine($"Sensor {_sensor.SendorId}, Carsin {_sensor.CarsIn.ToString().PadLeft(5, '0')}, Carsout {_sensor.CarsOut.ToString().PadLeft(5, '0')}, Timestamp {_sensor.ResetTimeStamp}, CurrentCars {ValkenBurg.CurrentCars.ToString().PadLeft(5, '0')}");
+            Console.WriteLine($"Sensor {_sensor.SendorId}, PeopleIn {_sensor.PeopleIn.ToString().PadLeft(5, '0')}, PeopleOut {_sensor.PeopleOut.ToString().PadLeft(5, '0')}, Timestamp {_sensor.ResetTimeStamp}, CurrentPeople {Location.CurrentPersons.ToString().PadLeft(5, '0')}");
 
             // actually save the record
             try
@@ -102,12 +109,12 @@ namespace LoRaDataGenerator.DA
                     ConnectionString = GetConnectionString()
                 };
                 cnn.Open();
-                string sql = "INSERT INTO LoRaSensorReading (SensorId, Car_in, Car_out, TimeStamp) VALUES (@SensorId, @Car_in, @Car_out, @TimeStamp)";
+                string sql = "INSERT INTO SensorReading (SensorId, People_in, People_out, TimeStamp) VALUES (@SensorId, @People_in, @People_out, @TimeStamp)";
                 using (SqlCommand cmd = new SqlCommand(sql, cnn))
                 {
                     cmd.Parameters.AddWithValue("@SensorId", _sensor.SendorId);
-                    cmd.Parameters.AddWithValue("@Car_in", _sensor.CarsIn);
-                    cmd.Parameters.AddWithValue("@Car_out", _sensor.CarsOut);
+                    cmd.Parameters.AddWithValue("@People_in", _sensor.PeopleIn);
+                    cmd.Parameters.AddWithValue("@People_out", _sensor.PeopleOut);
                     cmd.Parameters.AddWithValue("@TimeStamp", _sensor.ResetTimeStamp);
                     cmd.ExecuteNonQuery();
                 }
@@ -124,15 +131,15 @@ namespace LoRaDataGenerator.DA
         /// </summary>
         internal void GenerateAndStoreData()
         {
-            while (ValkenBurg.CalculatingDateTime < DateTime.Now)
+            while (Location.CalculatingDateTime < DateTime.Now)
             {
                 // create sensordata
-                foreach (var sensor in ValkenBurg.Sensors)
+                foreach (var sensor in Location.Sensors)
                 {
-                    sensor.Reset(ValkenBurg.CalculatingDateTime);
+                    sensor.Reset(Location.CalculatingDateTime);
 
                     double factorIn;
-                    switch (ValkenBurg.CalculatingDateTime.Hour)
+                    switch (Location.CalculatingDateTime.Hour)
                     {
                         case <= 10:
                             factorIn = 0.1;
@@ -146,7 +153,7 @@ namespace LoRaDataGenerator.DA
                     }
 
                     double factorOut;
-                    switch (ValkenBurg.CalculatingDateTime.Hour)
+                    switch (Location.CalculatingDateTime.Hour)
                     {
                         case > 16:
                             factorOut = 1;
@@ -158,18 +165,18 @@ namespace LoRaDataGenerator.DA
                             factorOut = 0.3;
                             break;
                     }
-                    sensor.GenerateFakeData(factorIn, factorOut, 1000, ValkenBurg.MaxCars - ValkenBurg.CurrentCars, ValkenBurg.CurrentCars);
+                    sensor.GenerateFakeData(factorIn, factorOut, MAXRANDOM, Location.MaxPersons - Location.CurrentPersons, Location.CurrentPersons);
                     
-                    // adjust valkenburg values
-                    ValkenBurg.CurrentCars += sensor.CarsIn;
-                    ValkenBurg.CurrentCars -= sensor.CarsOut;
+                    // adjust location values
+                    Location.CurrentPersons += sensor.PeopleIn;
+                    Location.CurrentPersons -= sensor.PeopleOut;
 
                     // store sensordata and reset
                     StoreData(sensor);
                 }
 
                 // next timeframe
-                ValkenBurg.CalculatingDateTime = ValkenBurg.CalculatingDateTime.AddMinutes(15);
+                Location.CalculatingDateTime = Location.CalculatingDateTime.AddMinutes(INTERVALMINUTES);
             }
         }
     }

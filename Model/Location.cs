@@ -2,23 +2,23 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace LoRaDataGenerator.Model
+namespace SensorDataGenerator.Model
 {
     /// <summary>
-    /// Represents a city
+    /// Represents a location/project placeholder
     /// </summary>
-    class City
+    class Location
     {
         /// <summary>
-        /// Max number of cars in the city
+        /// Max number of people of the location
         /// </summary>
-        public int MaxCars { get; set; }
+        public int MaxPersons { get; set; }
         /// <summary>
-        /// Current number of cars in the city
+        /// Current number of people
         /// </summary>
-        public int CurrentCars { get; set; }
+        public int CurrentPersons { get; set; }
         /// <summary>
-        /// Sensors in the city to monitor traffic
+        /// Sensors in the location to monitor 
         /// </summary>
         public List<Sensor> Sensors { get; set; }
         /// <summary>
@@ -27,13 +27,13 @@ namespace LoRaDataGenerator.Model
         public DateTime CalculatingDateTime { get; set; }
 
         /// <summary>
-        /// Constructor for the city
+        /// Constructor for the location
         /// </summary>
-        /// <param name="_calculatingDateTime">The date we are calculating the traffic for</param>
-        public City(DateTime _calculatingDateTime, int _sensors)
+        /// <param name="_calculatingDateTime">The date we are calculating for</param>
+        public Location(DateTime _calculatingDateTime, int _sensors)
         {
-            MaxCars = 20000;
-            CurrentCars = 5000;
+            MaxPersons = 20000;
+            CurrentPersons = 5000;
             CalculatingDateTime = _calculatingDateTime;
             Sensors = new List<Sensor>();
             for (int i = 0; i < _sensors; i++)

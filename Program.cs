@@ -1,8 +1,8 @@
-﻿using LoRaDataGenerator.DA;
-using LoRaDataGenerator.Model;
+﻿using SensorDataGenerator.DA;
+using SensorDataGenerator.Model;
 using System;
 
-namespace LoRaDataGenerator
+namespace SensorDataGenerator
 {
     class Program
     {
@@ -16,7 +16,7 @@ namespace LoRaDataGenerator
 
             Console.Clear();
 
-            Console.WriteLine("Creating location!");
+            Console.WriteLine("Creating location placeholder!");
             Console.WriteLine("Enter number of days for data generation (default 60)");
             
             var daysStr = Console.ReadLine();
@@ -31,18 +31,18 @@ namespace LoRaDataGenerator
             }
             daysInt = -1 * daysInt;
             
-            DAL ValkenburgDAL;
-            ValkenburgDAL = new DAL(DateTime.Now.Add(new TimeSpan(daysInt, 0, 0, 0)), server, db);
+            DAL LocationDAL;
+            LocationDAL = new DAL(DateTime.Now.Add(new TimeSpan(daysInt, 0, 0, 0)), server, db);
             // check connection
-            Console.WriteLine(ValkenburgDAL.CheckDatabaseConnection());
+            Console.WriteLine(LocationDAL.CheckDatabaseConnection());
             // empty table
-            Console.WriteLine($"Empty table. {ValkenburgDAL.TruncateDataTable()} rows deleted");
+            Console.WriteLine($"Empty table. {LocationDAL.TruncateDataTable()} rows deleted");
 
             // generate data
-            ValkenburgDAL.GenerateAndStoreData();
+            LocationDAL.GenerateAndStoreData();
 
             // check connection (show number of records)
-            Console.WriteLine(ValkenburgDAL.CheckDatabaseConnection());
+            Console.WriteLine(LocationDAL.CheckDatabaseConnection());
 
         }
     }
