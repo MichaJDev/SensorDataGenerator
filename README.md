@@ -4,11 +4,11 @@ Op alle plekken in de oplossing is commentaar in de code geplaatst wat zou moete
 
 
 # Prerequisites
--Visual Studio met .net6.0
--Toegankelijke SQL database server
+- Visual Studio met .net6.0
+- Toegankelijke SQL database server
 
 # Stappenplan
 
--Maak een database aan genaamd "Sensordata"
--Voer het script [Create_db_and_table.sql](Create_db_and_table.sql) uit
--Build en run de code
+- Maak een database aan genaamd "Sensordata"
+- Voer het script [Create_db_and_table.sql](Create_db_and_table.sql) uit
+- Build en run de code
