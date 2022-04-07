@@ -33,6 +33,11 @@ namespace SensorDataGenerator.Model
             InUse = false;
             ResetTimeStamp = _resetTimeStamp;
         }
+
+        public PressureSensor()
+        {
+        }
+
         /// <summary>
         /// Reset the sensor (after sending message)
         /// </summary>
@@ -53,12 +58,11 @@ namespace SensorDataGenerator.Model
         public void GenerateFakeData()
         {
             Random rnd = new Random();
-            var INUSE = rnd.Next(0, 1);
-            if(INUSE == 0)
+            var INUSE = rnd.Next(0, 5000);
+            if(INUSE < 2000)
             {
                 InUse = false;
-            }else if(INUSE == 1)
-            {
+            }else{
                 InUse = true;
             }
         }

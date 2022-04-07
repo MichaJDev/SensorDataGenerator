@@ -31,7 +31,7 @@ namespace SensorDataGenerator.Model
         /// Constructor for the location
         /// </summary>
         /// <param name="_calculatingDateTime">The date we are calculating for</param>
-        public Location(DateTime _calculatingDateTime, int _sensors, int _pSensors)
+        public Location(DateTime _calculatingDateTime, int _sensors)
         {
             MaxPersons = 100;
             CurrentPersons = 0;
@@ -42,7 +42,7 @@ namespace SensorDataGenerator.Model
                 Sensors.Add(new Sensor(i, Helper.DateToStamp(_calculatingDateTime)));
             }
             PressureSensors = new List<PressureSensor>();
-            for(int i = 0; i < _pSensors; i++)
+            for(int i = 0; i < _sensors; i++)
             {
                 PressureSensors.Add(new PressureSensor(i, Helper.DateToStamp(_calculatingDateTime)));
             }

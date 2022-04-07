@@ -53,6 +53,7 @@ namespace SensorDataGenerator
             Console.WriteLine(LocationDAL.CheckDatabaseConnection());
             // empty table
             Console.WriteLine($"Empty table: {LocationDAL.TruncateDataTable()} rows deleted");
+            Console.WriteLine($"Empty table: {LocationDAL.TruncatePressureDataTable()} rows deleted");
             Console.WriteLine("Press any key to start generating data");
             Console.ReadKey();
             // generate data

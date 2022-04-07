@@ -1,9 +1,6 @@
 USE [master]
 GO
 
-CREATE DATABASE [SensorData]
-GO
-
 USE [SensorData]
 GO
 
