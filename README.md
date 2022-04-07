@@ -3,12 +3,14 @@ Deze oplossing kun je gebruiken om sensordata te genereren. Bekijk goed hoe de c
 Op alle plekken in de oplossing is commentaar in de code geplaatst wat zou moeten helpen beter te begrijpen wat er gebeurt.
 
 
+# Included Sensors
+- Sensor (Entrance)
+- PressureSensor (Machines)
 # Prerequisites
 - Visual Studio met .net6.0
 - Toegankelijke SQL database server
 
 # Stappenplan
 
-- Open SQL server management studio
-- Voer het script [Create_db_and_table.sql](Create_db_and_table.sql) uit
-- Build en run de code
+
+- (NOG NIET GETEST) Bij het opstarten van het programma, wordt het script [Create_db_and_table_JhonnysVersie.sql](Create_db_and_table_JohnnysVersie.sql) automatisch uitgevoerd.
