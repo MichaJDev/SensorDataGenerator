@@ -12,10 +12,17 @@ namespace SensorDataGenerator
             Console.WriteLine("DATABASE CONNECTION:");
             Console.WriteLine("Enter database servername (default: .)");
             var server = Console.ReadLine();
+            if(server == null)
+            {
+                server = ".";
+            }
             Console.WriteLine("Enter catalog name (default: SensorData)");
             var db = Console.ReadLine();
-
-
+            if(db == null)
+            {
+                db = "SensorData";
+            }
+            
             // get location and sensor info
             Console.Clear();
             Console.WriteLine("Creating location placeholder!");
@@ -29,7 +36,10 @@ namespace SensorDataGenerator
             DAL LocationDAL;
             // Create the dal for the given connection. Provide the number of days to calculate from, the number of sensors (number of entries of the location) and the max number of persons in the location
             LocationDAL = new DAL(DateTime.Now.Add(new TimeSpan(daysInt, 0, 0, 0)), server, db, numberOfSensors, maxPeopleLocation);
-
+            // Creating database on server automatically since it wasnt included before, programmers do not like manual stuff
+            Console.Clear();
+            Console.WriteLine("Checking if Database exists...!");
+            LocationDAL.SetupDB();
             // summary
             Console.Clear();
             Console.WriteLine($"Database server {server}");

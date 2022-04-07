@@ -2,8 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace SensorDataGenerator.DA
@@ -13,21 +15,73 @@ namespace SensorDataGenerator.DA
     /// </summary>
     class DAL
     {
-        private string source = ".";
-        private string catalog = "SensorData";
+        private readonly string source = ".";
+        private readonly string catalog = "SensorData";
 
         const int MAXRANDOM = 8; // maximum number of people to add or delete per datageneration
         const int INTERVALMINUTES = 5; // interval in minutes to generate data for
 
         private string GetConnectionString()
         {
-            return $"Data Source=" + source + ";Initial Catalog=" + catalog + ";Integrated Security=True";            
+            return $"Data Source=" + source + ";Initial Catalog=" + catalog + ";Integrated Security=True";
+        }
+
+        public void SetupDB()
+        {
+            using (SqlConnection cnn = new SqlConnection(GetConnectionString()))
+            {
+                string script = File.ReadAllText(MapPath("~/Resources/Create_db_and_table_JhonnysVersie.sql"));
+                IEnumerable<string> commandStrings = Regex.Split(script, @"^\s*GO\s*$", RegexOptions.Multiline | RegexOptions.IgnoreCase);
+                cnn.Open();
+
+                if (DataBaseExists() == 0)
+                {
+                    Console.WriteLine("Databse doesnt exist! Creating....");
+                    foreach (string commandString in commandStrings)
+                    {
+                        try
+                        {
+                            if (commandString.Trim() != " ")
+                            {
+                                new SqlCommand(commandString, cnn).ExecuteNonQuery();
+                                Console.WriteLine($"Database: {catalog}, created on Server: {source}");
+                            }
+                        }
+                        catch (SqlException ex)
+                        {
+                            Console.WriteLine($"Unable to create Database: {catalog} on Server: {source}");
+                            Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
+                        }
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Database Already exists, halting creation");
+                }
+                cnn.Close();
+            }
+        }
+        private int DataBaseExists()
+        {
+            using (SqlConnection cnn = new SqlConnection(GetConnectionString()))
+            {
+                using (SqlCommand cmd = new SqlCommand())
+                {
+                    cnn.Open();
+                    cmd.Connection = cnn;
+                    cmd.CommandText = $"SELECT * FROM mastetr.dbo.sysdatabases where name = '{catalog}'";
+                    return (int)cmd.ExecuteScalar();
+                }
+            }
         }
 
         /// <summary>
         /// The location/project the sensors belong to
         /// </summary>
         public Location Location { get; set; }
+        /// <summary>
+        /// Empty Dal to start setup
+        /// </summary>
 
         /// <summary>
         /// The constructor for the DAL
@@ -38,8 +92,8 @@ namespace SensorDataGenerator.DA
         /// <param name="_numberOfSensors">number of sensors to generate</param>
         /// <param name="_locationMaxNumberOfPeople">Maximum number of people in the location</param>
         public DAL(DateTime _startDateCalculation, string _datasource, string _catalog, int _numberOfSensors, int _locationMaxNumberOfPeople)
-        {            
-            Location = new Location(_startDateCalculation, _numberOfSensors);
+        {
+            Location = new Location(_startDateCalculation, _numberOfSensors, _numberOfSensors);
             Location.MaxPersons = _locationMaxNumberOfPeople;
             Location.CurrentPersons = 0;
 
@@ -56,7 +110,7 @@ namespace SensorDataGenerator.DA
             using (SqlConnection cnn = new SqlConnection(GetConnectionString()))
             {
                 using (SqlCommand cmd = new SqlCommand())
-                {                    
+                {
                     cnn.Open();
                     cmd.Connection = cnn;
                     cmd.CommandText = "SELECT count(*) FROM SensorReading";
@@ -123,13 +177,45 @@ namespace SensorDataGenerator.DA
                     cmd.Parameters.AddWithValue("@TimeStamp", _sensor.ResetTimeStamp);
                     cmd.ExecuteNonQuery();
                 }
-                cnn.Close();    
+                cnn.Close();
             }
             catch (Exception)
             {
                 throw;
             }
         }
+        /// <summary>
+        /// StorePressure SensorData
+        /// </summary>
+        /// <param name="_sensor"></param>
+        private void StoreData(PressureSensor _sensor)
+        {
+            Console.WriteLine($"Sensor {_sensor.SensorId}, InUse {_sensor.InUse.ToString().PadLeft(5, '0')}, TimeStamp {_sensor.ResetTimeStamp}, CurrentPeople {Location.CurrentPersons.ToString().PadLeft(5, '0')}");
+            try
+            {
+                SqlConnection cnn = new SqlConnection
+                {
+                    ConnectionString = GetConnectionString()
+                };
+                cnn.Open();
+                string sql = "INSERT INTO PressureSensors (SensorId, InUse, TImeStamp) VALUES (@SensorId, @InUse, @TimeStamp)";
+                using (SqlCommand cmd = new SqlCommand(sql, cnn))
+                {
+                    cmd.Parameters.AddWithValue("@SensorId", _sensor.SensorId);
+                    cmd.Parameters.AddWithValue("@InUse", _sensor.InUse);
+                    cmd.Parameters.AddWithValue("@TimeStamp", _sensor.ResetTimeStamp);
+                }
+                cnn.Close();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Generate pressure sensors data and store
+        /// </summary>
 
         /// <summary>
         /// Generate the data and store
@@ -178,10 +264,24 @@ namespace SensorDataGenerator.DA
                             break;
                     }
                     sensor.GenerateFakeData(factorIn, factorOut, MAXRANDOM, Location.MaxPersons - Location.CurrentPersons, Location.CurrentPersons);
-                    
+
                     // adjust location values
                     Location.CurrentPersons += sensor.PeopleIn;
                     Location.CurrentPersons -= sensor.PeopleOut;
+
+                    // store sensordata and reset
+                    StoreData(sensor);
+                }
+                // create sensordata
+                foreach (var sensor in Location.PressureSensors)
+                {
+                    sensor.Reset(Location.CalculatingDateTime);
+
+                    sensor.GenerateFakeData();
+
+                    // adjust location values
+                    Location.CurrentPersons += sensor.PeopleUsing;
+                    Location.CurrentPersons -= sensor.PeopleNotUsing;
 
                     // store sensordata and reset
                     StoreData(sensor);
@@ -190,6 +290,11 @@ namespace SensorDataGenerator.DA
                 // next timeframe
                 Location.CalculatingDateTime = Location.CalculatingDateTime.AddMinutes(INTERVALMINUTES);
             }
+        }
+        private string MapPath(string path)
+        {
+            return Path.Combine((string)AppDomain.CurrentDomain.GetData("ContentRootPath"),
+            path);
         }
     }
 }
