@@ -33,7 +33,7 @@ namespace SensorDataGenerator.DA
             {
 
                 cnn.Open();
-                string script = "CREATE TABLE [dbo].[SensorReading]([EntryId][bigint] IDENTITY(1, 1) NOT NULL,[SensorId] [varchar](255) NULL,[People_in] [bigint] NULL,	[People_out] [bigint] NULL,	[TimeStamp] [varchar](12) NULL, CONSTRAINT[PK_SensorReading] PRIMARY KEY CLUSTERED(EntryId))";
+                string script = "CREATE TABLE [dbo].[SensorReading]([EntryId][int] IDENTITY(1, 1) NOT NULL,[SensorId] [int] NULL,[People_in] [int] NULL,	[People_out] [int] NULL,	[TimeStamp] [varchar](12) NULL, CONSTRAINT[PK_SensorReading] PRIMARY KEY CLUSTERED(EntryId))";
                 SqlCommand cmd = new SqlCommand(script, cnn);
                 cmd.Connection = cnn;
                 cmd.CommandText = script;
@@ -47,7 +47,7 @@ namespace SensorDataGenerator.DA
                     Console.WriteLine("Coudlnt Create SensorReading Table");
                     Debug.Write($"{e.Message} \n {e.StackTrace}");
                 }
-                script = "CREATE TABLE [dbo].[PressureSensors]([EnrtyId][bigint] IDENTITY(1, 1) NOT NULL,[SensorId] [varchar](255) NOT NULL,[InUse] [bit] NOT NULL,[TimeStamp] [varchar](255) NOT NULL, CONSTRAINT[PK_PressureSensors] PRIMARY KEY CLUSTERED(EnrtyId))";
+                script = "CREATE TABLE [dbo].[PressureSensors]([EnrtyId][int] IDENTITY(1, 1) NOT NULL,[SensorId] [int] NOT NULL,[InUse] [bit] NOT NULL,[TimeStamp] [varchar](255) NOT NULL, CONSTRAINT[PK_PressureSensors] PRIMARY KEY CLUSTERED(EnrtyId))";
                 cmd.CommandText = script;
                 try
                 {
